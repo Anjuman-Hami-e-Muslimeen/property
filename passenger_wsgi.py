@@ -1,19 +1,16 @@
 import sys
 import os
 
-# Add the project directory to the Python path
-INTERP = os.path.expanduser("/home/username/virtualenv/property_management/3.9/bin/python")
-if sys.executable != INTERP:
-    os.execl(INTERP, INTERP, *sys.argv)
+# Add the project directory to the Python path if not already present
+project_home = os.path.dirname(os.path.abspath(__file__))
+if project_home not in sys.path:
+    sys.path.insert(0, project_home)
 
-# Set the environment to production
-os.environ['FLASK_ENV'] = 'production'
+# Set the environment to production (optional, can also be set in .env)
+os.environ.setdefault('FLASK_ENV', 'production')
 
 # Import the Flask app
-from app_production import app
-
-# For cPanel deployment, the application should be available as 'application'
-application = app
+from app import app as application
 
 if __name__ == "__main__":
     application.run()
