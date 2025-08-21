@@ -13,9 +13,47 @@
                 </span>
             </div>
             <div class="card-body">
-                <div class="property-image mb-4 text-center" style="height: 300px; background: linear-gradient(45deg, #f8f9fa, #e9ecef); display: flex; align-items: center; justify-content: center;">
-                    <i class="fas fa-home fa-5x text-muted"></i>
+                <!-- Property Photos Gallery -->
+                {% set property_photos = documents | selectattr('document_type', 'equalto', 'Photos') | list %}
+                {% if property_photos %}
+                <div class="property-photos mb-4">
+                    <h5><i class="fas fa-images"></i> Property Photos</h5>
+                    <div class="row">
+                        {% for photo in property_photos[:6] %}
+                        <div class="col-md-4 col-6 mb-3">
+                            <div class="card h-100">
+                                <img src="{{ url_for('download_file', filename=photo.filename) }}" 
+                                     class="card-img-top photo-gallery-item" 
+                                     alt="{{ photo.original_filename }}"
+                                     style="height: 200px; object-fit: cover; cursor: pointer;"
+                                     data-photo-url="{{ url_for('download_file', filename=photo.filename) }}"
+                                     data-photo-name="{{ photo.original_filename }}">
+                                <div class="card-body p-2">
+                                    <small class="text-muted">{{ photo.original_filename }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if property_photos|length > 6 %}
+                    <div class="text-center">
+                        <button class="btn btn-outline-primary" onclick="showAllPhotos()">
+                            View All {{ property_photos|length }} Photos
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
+                {% else %}
+                <div class="property-image mb-4 text-center" style="height: 300px; background: linear-gradient(45deg, #f8f9fa, #e9ecef); display: flex; align-items: center; justify-content: center;">
+                    <div>
+                        <i class="fas fa-home fa-5x text-muted mb-3"></i>
+                        <p class="text-muted">No photos uploaded yet</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('Photos')">
+                            <i class="fas fa-plus"></i> Add Photos
+                        </button>
+                    </div>
+                </div>
+                {% endif %}
                 
                 {% if property.description %}
                 <div class="mb-4">
@@ -117,7 +155,7 @@
         <div class="card shadow mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-file-alt"></i> Documents</h5>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('General')">
                     <i class="fas fa-plus"></i> Add
                 </button>
             </div>
@@ -149,13 +187,16 @@
         <div class="card shadow mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0"><i class="fas fa-file-alt"></i> Documents</h5>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal">
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('General')">
                     <i class="fas fa-plus"></i> Add
                 </button>
             </div>
             <div class="card-body text-center text-muted">
                 <i class="fas fa-file-alt fa-3x mb-3"></i>
                 <p>No documents uploaded yet.</p>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('General')">
+                    <i class="fas fa-plus"></i> Add Document
+                </button>
             </div>
         </div>
         {% endif %}
@@ -371,6 +412,28 @@
     </div>
 </div>
 
+<!-- Photo Modal -->
+<div class="modal fade" id="photoModal" tabindex="-1" aria-labelledby="photoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="photoModalLabel">Property Photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalPhoto" src="" alt="" class="img-fluid" style="max-height: 70vh;">
+                <p class="mt-2" id="modalPhotoName"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a id="modalPhotoDownload" href="" class="btn btn-primary" download>
+                    <i class="fas fa-download"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Handle document deletion modal
 document.addEventListener('DOMContentLoaded', function() {
@@ -398,6 +461,35 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('deleteMapsLinkForm').action = '/delete_maps_link/' + linkId;
         });
     }
+    
+    // Handle photo gallery clicks
+    const photoItems = document.querySelectorAll('.photo-gallery-item');
+    photoItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            const photoUrl = this.getAttribute('data-photo-url');
+            const photoName = this.getAttribute('data-photo-name');
+            
+            document.getElementById('modalPhoto').src = photoUrl;
+            document.getElementById('modalPhoto').alt = photoName;
+            document.getElementById('modalPhotoName').textContent = photoName;
+            document.getElementById('modalPhotoDownload').href = photoUrl;
+            document.getElementById('modalPhotoDownload').download = photoName;
+            
+            const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
+            photoModal.show();
+        });
+    });
 });
+
+// Function to show all photos (can be expanded later)
+function showAllPhotos() {
+    // For now, just scroll to the documents section
+    document.querySelector('.card-header:has(.fa-file-alt)').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Function to set document type for add document modal
+function setDocumentType(type) {
+    document.getElementById('document_type').value = type;
+}
 </script>
 {% endblock %}

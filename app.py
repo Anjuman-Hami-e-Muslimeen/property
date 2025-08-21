@@ -189,8 +189,19 @@ def logout():
 def index():
     conn = get_db_connection()
     properties = conn.execute('SELECT * FROM properties ORDER BY created_date DESC').fetchall()
+    
+    # Get photos for each property
+    properties_with_photos = []
+    for property in properties:
+        photos = conn.execute('''SELECT * FROM property_documents 
+                               WHERE property_id = ? AND document_type = 'Photos' 
+                               ORDER BY upload_date DESC LIMIT 1''', (property['id'],)).fetchall()
+        property_dict = dict(property)
+        property_dict['photos'] = photos
+        properties_with_photos.append(property_dict)
+    
     conn.close()
-    return render_template('index.html', properties=properties)
+    return render_template('index.html', properties=properties_with_photos)
 
 @app.route('/property/<int:property_id>')
 @login_required
