@@ -1,16 +1,18 @@
 import sys
 import os
 
-# Add the application directory to Python path
-sys.path.insert(0, os.path.dirname(__file__))
+# Add the project directory to the Python path
+INTERP = os.path.expanduser("/home/username/virtualenv/property_management/3.9/bin/python")
+if sys.executable != INTERP:
+    os.execl(INTERP, INTERP, *sys.argv)
 
-from app import app
+# Set the environment to production
+os.environ['FLASK_ENV'] = 'production'
 
-# Initialize database when the application starts
-from app import init_db
-init_db()
+# Import the Flask app
+from app_production import app
 
-# WSGI callable object
+# For cPanel deployment, the application should be available as 'application'
 application = app
 
 if __name__ == "__main__":
