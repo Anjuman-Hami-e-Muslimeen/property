@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Add Property - Property Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-plus"></i> Add New Property</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="title" class="form-label">Property Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="property_type" class="form-label">Property Type</label>
+                            <select class="form-control" id="property_type" name="property_type">
+                                <option value="">Select Type</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="House">House</option>
+                                <option value="Villa">Villa</option>
+                                <option value="Plot">Plot</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Office">Office</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="Available">Available</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Sold">Sold</option>
+                                <option value="Rented">Rented</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the property features, amenities, etc."></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price (₹)</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="City, Area, State">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="bedrooms" class="form-label">Bedrooms</label>
+                            <input type="number" class="form-control" id="bedrooms" name="bedrooms" min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="bathrooms" class="form-label">Bathrooms</label>
+                            <input type="number" class="form-control" id="bathrooms" name="bathrooms" min="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="area" class="form-label">Area (sq ft)</label>
+                            <input type="number" class="form-control" id="area" name="area" step="0.01" min="0">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="owner_name" class="form-label">Owner Name</label>
+                            <input type="text" class="form-control" id="owner_name" name="owner_name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="owner_contact" class="form-label">Owner Contact</label>
+                            <input type="text" class="form-control" id="owner_contact" name="owner_contact" placeholder="Phone/Email">
+                        </div>
+                    </div>
+                    
+                    <!-- Google Maps Section -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Location Details</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="latitude" class="form-label">Latitude</label>
+                                    <input type="number" class="form-control" id="latitude" name="latitude" step="any" placeholder="e.g., 12.9716">
+                                    <div class="form-text">Optional: Enter the latitude coordinate</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="longitude" class="form-label">Longitude</label>
+                                    <input type="number" class="form-control" id="longitude" name="longitude" step="any" placeholder="e.g., 77.5946">
+                                    <div class="form-text">Optional: Enter the longitude coordinate</div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="google_maps_link" class="form-label">Google Maps Link</label>
+                                <input type="url" class="form-control" id="google_maps_link" name="google_maps_link" placeholder="https://maps.google.com/...">
+                                <div class="form-text">Optional: Paste a Google Maps link for the property location</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="documents" class="form-label">Documents</label>
+                        <input type="file" class="form-control" id="documents" name="documents" multiple>
+                        <div class="form-text">Upload property documents (PDF, Images, etc.). Max 16MB per file.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Property
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

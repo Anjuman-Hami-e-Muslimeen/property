@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ property.title }} - Property Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Property</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="title" class="form-label">Property Title *</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ property.title }}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="property_type" class="form-label">Property Type</label>
+                            <select class="form-control" id="property_type" name="property_type">
+                                <option value="">Select Type</option>
+                                <option value="Apartment" {{ 'selected' if property.property_type == 'Apartment' else '' }}>Apartment</option>
+                                <option value="House" {{ 'selected' if property.property_type == 'House' else '' }}>House</option>
+                                <option value="Villa" {{ 'selected' if property.property_type == 'Villa' else '' }}>Villa</option>
+                                <option value="Plot" {{ 'selected' if property.property_type == 'Plot' else '' }}>Plot</option>
+                                <option value="Commercial" {{ 'selected' if property.property_type == 'Commercial' else '' }}>Commercial</option>
+                                <option value="Office" {{ 'selected' if property.property_type == 'Office' else '' }}>Office</option>
+                                <option value="Other" {{ 'selected' if property.property_type == 'Other' else '' }}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="Available" {{ 'selected' if property.status == 'Available' else '' }}>Available</option>
+                                <option value="Pending" {{ 'selected' if property.status == 'Pending' else '' }}>Pending</option>
+                                <option value="Sold" {{ 'selected' if property.status == 'Sold' else '' }}>Sold</option>
+                                <option value="Rented" {{ 'selected' if property.status == 'Rented' else '' }}>Rented</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Describe the property features, amenities, etc.">{{ property.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price (₹)</label>
+                            <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" value="{{ property.price or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="City, Area, State" value="{{ property.location or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="bedrooms" class="form-label">Bedrooms</label>
+                            <input type="number" class="form-control" id="bedrooms" name="bedrooms" min="0" value="{{ property.bedrooms or '' }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="bathrooms" class="form-label">Bathrooms</label>
+                            <input type="number" class="form-control" id="bathrooms" name="bathrooms" min="0" value="{{ property.bathrooms or '' }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="area" class="form-label">Area (sq ft)</label>
+                            <input type="number" class="form-control" id="area" name="area" step="0.01" min="0" value="{{ property.area or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="owner_name" class="form-label">Owner Name</label>
+                            <input type="text" class="form-control" id="owner_name" name="owner_name" value="{{ property.owner_name or '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="owner_contact" class="form-label">Owner Contact</label>
+                            <input type="text" class="form-control" id="owner_contact" name="owner_contact" placeholder="Phone/Email" value="{{ property.owner_contact or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> To add or remove documents, please use the property detail page after saving changes.
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('property_detail', property_id=property.id) }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Update Property
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
