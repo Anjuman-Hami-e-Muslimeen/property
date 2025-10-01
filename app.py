@@ -6,6 +6,7 @@ from datetime import datetime
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 # Load environment variables
 load_dotenv()
@@ -479,6 +480,10 @@ def delete_document(document_id):
 @login_required
 def download_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+app.wsgi_app = DispatcherMiddleware(app.wsgi_app, {
+    '/property_management_application/property_management': app
+})
 
 if __name__ == '__main__':
     init_db()

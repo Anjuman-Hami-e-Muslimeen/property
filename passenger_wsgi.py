@@ -1,16 +1,16 @@
-import sys
-import os
+import os, sys
 
-# Add the project directory to the Python path if not already present
-project_home = os.path.dirname(os.path.abspath(__file__))
-if project_home not in sys.path:
-    sys.path.insert(0, project_home)
+# Point to your cPanel Python virtualenv interpreter
+INTERP = os.path.expanduser("/home/anjumanedu/virtualenv/public_html/3.9/bin/python")
+if sys.executable != INTERP:
+    os.execl(INTERP, INTERP, *sys.argv)
 
-# Set the environment to production (optional, can also be set in .env)
-os.environ.setdefault('FLASK_ENV', 'production')
+# Ensure project root is on sys.path
+PROJECT_ROOT = os.path.dirname(__file__)
+sys.path.insert(0, PROJECT_ROOT)
 
-# Import the Flask app
-from app import app as application
+# Optional: chdir to project root (helps template paths)
+os.chdir(PROJECT_ROOT)
 
-if __name__ == "__main__":
-    application.run()
+# Import the Flask app instance
+from app_production import app as application

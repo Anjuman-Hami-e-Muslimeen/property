@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: property-management
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app_production:app
+    envVars:
+      - key: FLASK_SECRET_KEY
+        value: 5b1d045c16186b3fd06291883cd8e1d9
+      - key: FLASK_ENV
+        value: production
+      - key: FLASK_DEBUG
+        value: False
+      - key: DATABASE_URL
+        value: sqlite:///property_management.db
+      - key: ADMIN_USERNAME
+        value: admin@AhM@2025
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: MAX_CONTENT_LENGTH
+        value: 16777216
+      - key: UPLOAD_FOLDER
+        value: uploads
+      - key: ALLOWED_EXTENSIONS
+        value: txt,pdf,png,jpg,jpeg,gif,doc,docx
+      - key: SESSION_COOKIE_SECURE
+        value: True
+      - key: SESSION_COOKIE_HTTPONLY
+        value: True
+      - key: SESSION_COOKIE_SAMESITE
+        value: Lax
+    staticPublishPath: uploads
