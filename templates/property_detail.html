@@ -5,10 +5,13 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-8">
-        <div class="card shadow">
+        <div class="card shadow-custom-lg animate-fade-in-up">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">{{ property.title }}</h4>
-                <span class="badge bg-{{ 'success' if property.status == 'Available' else 'warning' if property.status == 'Pending' else 'danger' }} fs-6">
+                <div>
+                    <h4 class="mb-0 text-white">{{ property.title }}</h4>
+                    <p class="mb-0 text-white-50">Property Details & Information</p>
+                </div>
+                <span class="badge bg-{{ 'success' if property.status == 'Available' else 'warning' if property.status == 'Pending' else 'danger' }} fs-6 shadow-custom">
                     {{ property.status }}
                 </span>
             </div>
@@ -72,44 +75,36 @@
                     {% endif %}
                 </div>
                 
-                <div class="row mb-4">
+                <div class="property-details-grid">
                     {% if property.bedrooms %}
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="p-3 bg-light rounded">
-                            <i class="fas fa-bed fa-2x text-primary mb-2"></i>
-                            <h5>{{ property.bedrooms }}</h5>
-                            <small class="text-muted">Bedroom{{ 's' if property.bedrooms != 1 else '' }}</small>
-                        </div>
+                    <div class="property-detail-item">
+                        <i class="fas fa-bed"></i>
+                        <h5>{{ property.bedrooms }}</h5>
+                        <small class="text-muted">Bedroom{{ 's' if property.bedrooms != 1 else '' }}</small>
                     </div>
                     {% endif %}
                     
                     {% if property.bathrooms %}
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="p-3 bg-light rounded">
-                            <i class="fas fa-bath fa-2x text-primary mb-2"></i>
-                            <h5>{{ property.bathrooms }}</h5>
-                            <small class="text-muted">Bathroom{{ 's' if property.bathrooms != 1 else '' }}</small>
-                        </div>
+                    <div class="property-detail-item">
+                        <i class="fas fa-bath"></i>
+                        <h5>{{ property.bathrooms }}</h5>
+                        <small class="text-muted">Bathroom{{ 's' if property.bathrooms != 1 else '' }}</small>
                     </div>
                     {% endif %}
                     
                     {% if property.area %}
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="p-3 bg-light rounded">
-                            <i class="fas fa-expand-arrows-alt fa-2x text-primary mb-2"></i>
-                            <h5>{{ property.area }}</h5>
-                            <small class="text-muted">Sq Ft</small>
-                        </div>
+                    <div class="property-detail-item">
+                        <i class="fas fa-expand-arrows-alt"></i>
+                        <h5>{{ property.area }}</h5>
+                        <small class="text-muted">Sq Ft</small>
                     </div>
                     {% endif %}
                     
                     {% if property.property_type %}
-                    <div class="col-md-3 col-6 text-center">
-                        <div class="p-3 bg-light rounded">
-                            <i class="fas fa-tag fa-2x text-primary mb-2"></i>
-                            <h5>{{ property.property_type }}</h5>
-                            <small class="text-muted">Type</small>
-                        </div>
+                    <div class="property-detail-item">
+                        <i class="fas fa-tag"></i>
+                        <h5>{{ property.property_type }}</h5>
+                        <small class="text-muted">Type</small>
                     </div>
                     {% endif %}
                 </div>
@@ -119,9 +114,11 @@
     
     <div class="col-lg-4">
         <!-- Contact Info -->
-        <div class="card shadow mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-user"></i> Contact Information</h5>
+        <div class="card shadow-custom mb-4 animate-fade-in-right">
+            <div class="card-header bg-gradient-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>Contact Information
+                </h5>
             </div>
             <div class="card-body">
                 {% if property.owner_name %}
@@ -137,9 +134,11 @@
         </div>
         
         <!-- Property Details -->
-        <div class="card shadow mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-calendar"></i> Property Details</h5>
+        <div class="card shadow-custom mb-4 animate-fade-in-right" style="animation-delay: 0.1s;">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>Property Details
+                </h5>
             </div>
             <div class="card-body">
                 <p><strong>Added:</strong> {{ property.created_date[:10] if property.created_date else 'N/A' }}</p>
@@ -152,32 +151,36 @@
         
         <!-- Documents -->
         {% if documents %}
-        <div class="card shadow mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="fas fa-file-alt"></i> Documents</h5>
-                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('General')">
-                    <i class="fas fa-plus"></i> Add
+        <div class="card shadow-custom mb-4 animate-fade-in-right" style="animation-delay: 0.2s;">
+            <div class="card-header d-flex justify-content-between align-items-center bg-gradient-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>Documents
+                </h5>
+                <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addDocumentModal" onclick="setDocumentType('General')">
+                    <i class="fas fa-plus me-1"></i>Add
                 </button>
             </div>
             <div class="card-body">
                 {% for doc in documents %}
-                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-file me-2"></i>
-                            <div>
-                                <div class="fw-bold">{{ doc.original_filename }}</div>
-                                <small class="text-muted">{{ doc.document_type }} • {{ doc.upload_date[:10] if doc.upload_date else 'N/A' }}</small>
+                <div class="document-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-file me-2 text-primary"></i>
+                                <div>
+                                    <div class="fw-bold">{{ doc.original_filename }}</div>
+                                    <small class="text-muted">{{ doc.document_type }} • {{ doc.upload_date[:10] if doc.upload_date else 'N/A' }}</small>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="btn-group" role="group">
-                        <a href="{{ url_for('download_file', filename=doc.filename) }}" class="btn btn-sm btn-outline-primary" target="_blank">
-                            <i class="fas fa-download"></i>
-                        </a>
-                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteDocumentModal" data-document-id="{{ doc.id }}" data-document-name="{{ doc.original_filename }}">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('download_file', filename=doc.filename) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                <i class="fas fa-download"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteDocumentModal" data-document-id="{{ doc.id }}" data-document-name="{{ doc.original_filename }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -247,20 +250,22 @@
         {% endif %}
         
         <!-- Actions -->
-        <div class="card shadow">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-cogs"></i> Actions</h5>
+        <div class="card shadow-custom animate-fade-in-right" style="animation-delay: 0.3s;">
+            <div class="card-header bg-gradient-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>Actions
+                </h5>
             </div>
             <div class="card-body">
                 <div class="d-grid gap-2">
-                    <a href="{{ url_for('edit_property', property_id=property.id) }}" class="btn btn-warning">
-                        <i class="fas fa-edit"></i> Edit Property
+                    <a href="{{ url_for('edit_property', property_id=property.id) }}" class="btn btn-warning shadow-custom">
+                        <i class="fas fa-edit me-2"></i>Edit Property
                     </a>
-                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
-                        <i class="fas fa-trash"></i> Delete Property
+                    <button type="button" class="btn btn-danger shadow-custom" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash me-2"></i>Delete Property
                     </button>
-                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Listings
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary shadow-custom">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Listings
                     </a>
                 </div>
             </div>

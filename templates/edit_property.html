@@ -5,9 +5,12 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header bg-warning text-dark">
-                <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Property</h4>
+        <div class="card shadow-custom-lg animate-fade-in-up">
+            <div class="card-header bg-gradient-warning text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>Edit Property
+                </h4>
+                <p class="mb-0 text-white-50">Update the property information below</p>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -86,15 +89,15 @@
                     </div>
                     
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> To add or remove documents, please use the property detail page after saving changes.
+                        <i class="fas fa-info-circle me-2"></i>To add or remove documents, please use the property detail page after saving changes.
                     </div>
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('property_detail', property_id=property.id) }}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancel
+                            <i class="fas fa-times me-2"></i>Cancel
                         </a>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="fas fa-save"></i> Update Property
+                        <button type="submit" class="btn btn-warning shadow-custom">
+                            <i class="fas fa-save me-2"></i>Update Property
                         </button>
                     </div>
                 </form>

@@ -5,9 +5,12 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-plus"></i> Add New Property</h4>
+        <div class="card shadow-custom-lg animate-fade-in-up">
+            <div class="card-header">
+                <h4 class="mb-0 text-white">
+                    <i class="fas fa-plus me-2"></i>Add New Property
+                </h4>
+                <p class="mb-0 text-white-50">Fill in the details below to add a new property to your portfolio</p>
             </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
@@ -86,9 +89,11 @@
                     </div>
                     
                     <!-- Google Maps Section -->
-                    <div class="card mb-3">
-                        <div class="card-header">
-                            <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Location Details</h6>
+                    <div class="card mb-3 shadow-custom">
+                        <div class="card-header bg-gradient-secondary text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-map-marker-alt me-2"></i>Location Details
+                            </h6>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -119,10 +124,10 @@
                     
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="{{ url_for('index') }}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Cancel
+                            <i class="fas fa-times me-2"></i>Cancel
                         </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> Save Property
+                        <button type="submit" class="btn btn-primary shadow-custom">
+                            <i class="fas fa-save me-2"></i>Save Property
                         </button>
                     </div>
                 </form>
