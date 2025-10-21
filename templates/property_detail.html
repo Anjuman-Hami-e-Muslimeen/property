@@ -16,21 +16,41 @@
                 </span>
             </div>
             <div class="card-body">
-                <!-- Property Photos Gallery -->
+                <!-- Enhanced Property Photos Gallery -->
                 {% set property_photos = documents | selectattr('document_type', 'equalto', 'Photos') | list %}
                 {% if property_photos %}
                 <div class="property-photos mb-4">
-                    <h5><i class="fas fa-images"></i> Property Photos</h5>
-                    <div class="row">
-                        {% for photo in property_photos[:6] %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5><i class="fas fa-images"></i> Property Photos ({{ property_photos|length }})</h5>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <button class="btn btn-outline-primary" onclick="toggleGalleryView('grid')">
+                                <i class="fas fa-th"></i> Grid
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="toggleGalleryView('carousel')">
+                                <i class="fas fa-images"></i> Carousel
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Grid View -->
+                    <div id="gridView" class="row">
+                        {% for photo in property_photos %}
                         <div class="col-md-4 col-6 mb-3">
-                            <div class="card h-100">
-                                <img src="{{ url_for('download_file', filename=photo.filename) }}" 
-                                     class="card-img-top photo-gallery-item" 
-                                     alt="{{ photo.original_filename }}"
-                                     style="height: 200px; object-fit: cover; cursor: pointer;"
-                                     data-photo-url="{{ url_for('download_file', filename=photo.filename) }}"
-                                     data-photo-name="{{ photo.original_filename }}">
+                            <div class="card h-100 photo-card">
+                                <div class="position-relative">
+                                    <img src="{{ url_for('download_file', filename=photo.filename) }}" 
+                                         class="card-img-top photo-gallery-item" 
+                                         alt="{{ photo.original_filename }}"
+                                         style="height: 200px; object-fit: cover; cursor: pointer;"
+                                         data-photo-url="{{ url_for('download_file', filename=photo.filename) }}"
+                                         data-photo-name="{{ photo.original_filename }}"
+                                         data-photo-index="{{ loop.index0 }}">
+                                    <div class="photo-overlay">
+                                        <button class="btn btn-sm btn-light" onclick="openPhotoModal({{ loop.index0 }})">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                    </div>
+                                </div>
                                 <div class="card-body p-2">
                                     <small class="text-muted">{{ photo.original_filename }}</small>
                                 </div>
@@ -38,13 +58,33 @@
                         </div>
                         {% endfor %}
                     </div>
-                    {% if property_photos|length > 6 %}
-                    <div class="text-center">
-                        <button class="btn btn-outline-primary" onclick="showAllPhotos()">
-                            View All {{ property_photos|length }} Photos
-                        </button>
+                    
+                    <!-- Carousel View -->
+                    <div id="carouselView" class="d-none">
+                        <div id="photoCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                {% for photo in property_photos %}
+                                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                    <img src="{{ url_for('download_file', filename=photo.filename) }}" 
+                                         class="d-block w-100" 
+                                         alt="{{ photo.original_filename }}"
+                                         style="height: 400px; object-fit: cover;">
+                                    <div class="carousel-caption d-none d-md-block">
+                                        <h5>{{ photo.original_filename }}</h5>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        </div>
                     </div>
-                    {% endif %}
                 </div>
                 {% else %}
                 <div class="property-image mb-4 text-center" style="height: 300px; background: linear-gradient(45deg, #f8f9fa, #e9ecef); display: flex; align-items: center; justify-content: center;">
@@ -76,27 +116,11 @@
                 </div>
                 
                 <div class="property-details-grid">
-                    {% if property.bedrooms %}
+                    {% if property.rtc %}
                     <div class="property-detail-item">
-                        <i class="fas fa-bed"></i>
-                        <h5>{{ property.bedrooms }}</h5>
-                        <small class="text-muted">Bedroom{{ 's' if property.bedrooms != 1 else '' }}</small>
-                    </div>
-                    {% endif %}
-                    
-                    {% if property.bathrooms %}
-                    <div class="property-detail-item">
-                        <i class="fas fa-bath"></i>
-                        <h5>{{ property.bathrooms }}</h5>
-                        <small class="text-muted">Bathroom{{ 's' if property.bathrooms != 1 else '' }}</small>
-                    </div>
-                    {% endif %}
-                    
-                    {% if property.area %}
-                    <div class="property-detail-item">
-                        <i class="fas fa-expand-arrows-alt"></i>
-                        <h5>{{ property.area }}</h5>
-                        <small class="text-muted">Sq Ft</small>
+                        <i class="fas fa-file-alt"></i>
+                        <h5>{{ property.rtc }}</h5>
+                        <small class="text-muted">RTC Number</small>
                     </div>
                     {% endif %}
                     
@@ -108,6 +132,25 @@
                     </div>
                     {% endif %}
                 </div>
+                
+                <!-- Interactive Map Section -->
+                {% if maps_links %}
+                <div class="mt-4">
+                    <h5><i class="fas fa-map-marker-alt"></i> Property Location</h5>
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <div id="propertyMap" style="height: 400px; width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        {% for link in maps_links %}
+                        <a href="{{ link.google_maps_link }}" target="_blank" class="btn btn-outline-primary btn-sm me-2">
+                            <i class="fas fa-external-link-alt me-1"></i>{{ link.link_title }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -495,6 +538,71 @@ function showAllPhotos() {
 // Function to set document type for add document modal
 function setDocumentType(type) {
     document.getElementById('document_type').value = type;
+}
+
+// Enhanced Photo Gallery Functions
+function toggleGalleryView(view) {
+    const gridView = document.getElementById('gridView');
+    const carouselView = document.getElementById('carouselView');
+    
+    if (view === 'grid') {
+        gridView.classList.remove('d-none');
+        carouselView.classList.add('d-none');
+    } else {
+        gridView.classList.add('d-none');
+        carouselView.classList.remove('d-none');
+    }
+}
+
+function openPhotoModal(index) {
+    const photos = {{ property_photos|tojson }};
+    if (photos && photos[index]) {
+        const photo = photos[index];
+        document.getElementById('modalPhoto').src = photo.filename;
+        document.getElementById('modalPhoto').alt = photo.original_filename;
+        document.getElementById('modalPhotoName').textContent = photo.original_filename;
+        document.getElementById('modalPhotoDownload').href = photo.filename;
+        document.getElementById('modalPhotoDownload').download = photo.original_filename;
+        
+        const photoModal = new bootstrap.Modal(document.getElementById('photoModal'));
+        photoModal.show();
+    }
+}
+
+// Initialize Map
+function initMap() {
+    const mapsLinks = {{ maps_links|tojson }};
+    if (mapsLinks && mapsLinks.length > 0) {
+        const mapElement = document.getElementById('propertyMap');
+        if (mapElement) {
+            // Use the first map link with coordinates
+            const firstLink = mapsLinks.find(link => link.latitude && link.longitude);
+            if (firstLink) {
+                // Create a simple map placeholder (you can integrate with Google Maps API)
+                mapElement.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
+                            <h5>Property Location</h5>
+                            <p class="text-muted">Coordinates: ${firstLink.latitude}, ${firstLink.longitude}</p>
+                            <a href="${firstLink.google_maps_link}" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-external-link-alt me-2"></i>View on Google Maps
+                            </a>
+                        </div>
+                    </div>
+                `;
+            } else {
+                mapElement.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No coordinates available</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+    }
 }
 </script>
 {% endblock %}

@@ -70,9 +70,7 @@ def init_db():
                   property_type TEXT,
                   price REAL,
                   location TEXT,
-                  bedrooms INTEGER,
-                  bathrooms INTEGER,
-                  area REAL,
+                  rtc TEXT,
                   status TEXT DEFAULT 'Available',
                   owner_name TEXT,
                   owner_contact TEXT,
@@ -147,6 +145,15 @@ def migrate_db():
                          FOREIGN KEY (property_id) REFERENCES properties (id))''')
             print("Created property_maps_links table")
         
+        # Check if rtc column exists in properties table
+        c.execute("PRAGMA table_info(properties)")
+        columns = [column[1] for column in c.fetchall()]
+        
+        if 'rtc' not in columns:
+            # Add rtc column to existing properties table
+            c.execute('ALTER TABLE properties ADD COLUMN rtc TEXT')
+            print("Added rtc column to properties table")
+        
         conn.commit()
         print("Database migration completed successfully")
         
@@ -194,11 +201,70 @@ def logout():
     flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 @login_required
 def index():
     conn = get_db_connection()
-    properties = conn.execute('SELECT * FROM properties ORDER BY created_date DESC').fetchall()
+    
+    # Get all filter parameters
+    search_query = request.args.get('search', '')
+    property_type = request.args.get('property_type', '')
+    status = request.args.get('status', '')
+    price_min = request.args.get('price_min', '')
+    price_max = request.args.get('price_max', '')
+    location = request.args.get('location', '')
+    sort_by = request.args.get('sort_by', 'created_date')
+    sort_order = request.args.get('sort_order', 'desc')
+    
+    # Build the query dynamically
+    query = "SELECT * FROM properties WHERE 1=1"
+    params = []
+    
+    if search_query:
+        query += " AND (rtc LIKE ? OR title LIKE ? OR description LIKE ?)"
+        search_param = f'%{search_query}%'
+        params.extend([search_param, search_param, search_param])
+    
+    if property_type:
+        query += " AND property_type = ?"
+        params.append(property_type)
+    
+    if status:
+        query += " AND status = ?"
+        params.append(status)
+    
+    if price_min:
+        try:
+            price_min_val = float(price_min)
+            query += " AND price >= ?"
+            params.append(price_min_val)
+        except ValueError:
+            pass
+    
+    if price_max:
+        try:
+            price_max_val = float(price_max)
+            query += " AND price <= ?"
+            params.append(price_max_val)
+        except ValueError:
+            pass
+    
+    if location:
+        query += " AND location LIKE ?"
+        params.append(f'%{location}%')
+    
+    # Add sorting
+    valid_sort_fields = ['created_date', 'updated_date', 'title', 'price', 'status']
+    if sort_by in valid_sort_fields:
+        query += f" ORDER BY {sort_by}"
+        if sort_order.lower() == 'asc':
+            query += " ASC"
+        else:
+            query += " DESC"
+    else:
+        query += " ORDER BY created_date DESC"
+    
+    properties = conn.execute(query, params).fetchall()
     
     # Get photos for each property
     properties_with_photos = []
@@ -210,8 +276,100 @@ def index():
         property_dict['photos'] = photos
         properties_with_photos.append(property_dict)
     
+    # Get filter options for the form
+    property_types = conn.execute('SELECT DISTINCT property_type FROM properties WHERE property_type IS NOT NULL AND property_type != ""').fetchall()
+    statuses = conn.execute('SELECT DISTINCT status FROM properties WHERE status IS NOT NULL').fetchall()
+    locations = conn.execute('SELECT DISTINCT location FROM properties WHERE location IS NOT NULL AND location != ""').fetchall()
+    
     conn.close()
-    return render_template('index.html', properties=properties_with_photos)
+    
+    return render_template('index.html', 
+                         properties=properties_with_photos, 
+                         search_query=search_query,
+                         property_type=property_type,
+                         status=status,
+                         price_min=price_min,
+                         price_max=price_max,
+                         location=location,
+                         sort_by=sort_by,
+                         sort_order=sort_order,
+                         property_types=property_types,
+                         statuses=statuses,
+                         locations=locations)
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    conn = get_db_connection()
+    
+    # Get basic statistics
+    total_properties = conn.execute('SELECT COUNT(*) as count FROM properties').fetchone()['count']
+    
+    # Properties by status
+    status_stats = conn.execute('''
+        SELECT status, COUNT(*) as count 
+        FROM properties 
+        WHERE status IS NOT NULL 
+        GROUP BY status
+    ''').fetchall()
+    
+    # Properties by type
+    type_stats = conn.execute('''
+        SELECT property_type, COUNT(*) as count 
+        FROM properties 
+        WHERE property_type IS NOT NULL AND property_type != ""
+        GROUP BY property_type
+    ''').fetchall()
+    
+    # Price statistics
+    price_stats = conn.execute('''
+        SELECT 
+            MIN(price) as min_price,
+            MAX(price) as max_price,
+            AVG(price) as avg_price,
+            COUNT(CASE WHEN price > 0 THEN 1 END) as properties_with_price
+        FROM properties
+    ''').fetchone()
+    
+    # Recent properties (last 30 days)
+    recent_properties = conn.execute('''
+        SELECT * FROM properties 
+        WHERE created_date >= date('now', '-30 days')
+        ORDER BY created_date DESC
+        LIMIT 5
+    ''').fetchall()
+    
+    # Properties by month (for chart)
+    monthly_stats = conn.execute('''
+        SELECT 
+            strftime('%Y-%m', created_date) as month,
+            COUNT(*) as count
+        FROM properties 
+        WHERE created_date >= date('now', '-12 months')
+        GROUP BY strftime('%Y-%m', created_date)
+        ORDER BY month
+    ''').fetchall()
+    
+    # Location statistics
+    location_stats = conn.execute('''
+        SELECT location, COUNT(*) as count 
+        FROM properties 
+        WHERE location IS NOT NULL AND location != ""
+        GROUP BY location
+        ORDER BY count DESC
+        LIMIT 10
+    ''').fetchall()
+    
+    conn.close()
+    
+    return render_template('dashboard.html', 
+                         total_properties=total_properties,
+                         status_stats=status_stats,
+                         type_stats=type_stats,
+                         price_stats=price_stats,
+                         recent_properties=recent_properties,
+                         monthly_stats=monthly_stats,
+                         location_stats=location_stats)
 
 @app.route('/property/<int:property_id>')
 @login_required
@@ -237,9 +395,7 @@ def add_property():
         property_type = request.form['property_type']
         price = float(request.form['price']) if request.form['price'] else 0.0
         location = request.form['location']
-        bedrooms = int(request.form['bedrooms']) if request.form['bedrooms'] else 0
-        bathrooms = int(request.form['bathrooms']) if request.form['bathrooms'] else 0
-        area = float(request.form['area']) if request.form['area'] else 0.0
+        rtc = request.form['rtc'] if 'rtc' in request.form else ''
         status = request.form['status']
         owner_name = request.form['owner_name']
         owner_contact = request.form['owner_contact']
@@ -249,9 +405,9 @@ def add_property():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''INSERT INTO properties 
-                         (title, description, property_type, price, location, bedrooms, bathrooms, area, status, owner_name, owner_contact, created_date, updated_date)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
-                      (title, description, property_type, price, location, bedrooms, bathrooms, area, status, owner_name, owner_contact, current_time, current_time))
+                         (title, description, property_type, price, location, rtc, status, owner_name, owner_contact, created_date, updated_date)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                      (title, description, property_type, price, location, rtc, status, owner_name, owner_contact, current_time, current_time))
         
         property_id = cursor.lastrowid
         
@@ -310,9 +466,7 @@ def edit_property(property_id):
         property_type = request.form['property_type']
         price = float(request.form['price']) if request.form['price'] else 0.0
         location = request.form['location']
-        bedrooms = int(request.form['bedrooms']) if request.form['bedrooms'] else 0
-        bathrooms = int(request.form['bathrooms']) if request.form['bathrooms'] else 0
-        area = float(request.form['area']) if request.form['area'] else 0.0
+        rtc = request.form['rtc'] if 'rtc' in request.form else ''
         status = request.form['status']
         owner_name = request.form['owner_name']
         owner_contact = request.form['owner_contact']
@@ -321,10 +475,10 @@ def edit_property(property_id):
         
         conn.execute('''UPDATE properties 
                        SET title = ?, description = ?, property_type = ?, price = ?, location = ?, 
-                           bedrooms = ?, bathrooms = ?, area = ?, status = ?, owner_name = ?, 
+                           rtc = ?, status = ?, owner_name = ?, 
                            owner_contact = ?, updated_date = ?
                        WHERE id = ?''',
-                    (title, description, property_type, price, location, bedrooms, bathrooms, area, 
+                    (title, description, property_type, price, location, rtc, 
                      status, owner_name, owner_contact, updated_time, property_id))
         
         conn.commit()
@@ -474,6 +628,79 @@ def delete_document(document_id):
     
     conn.close()
     flash('Document not found!', 'error')
+    return redirect(url_for('index'))
+
+@app.route('/bulk_action', methods=['POST'])
+@login_required
+def bulk_action():
+    action = request.form.get('action')
+    property_ids = request.form.getlist('property_ids')
+    
+    if not property_ids:
+        flash('No properties selected.', 'error')
+        return redirect(url_for('index'))
+    
+    conn = get_db_connection()
+    
+    try:
+        if action == 'delete':
+            # Delete selected properties
+            for property_id in property_ids:
+                # Delete associated documents from filesystem
+                documents = conn.execute('SELECT filename FROM property_documents WHERE property_id = ?', (property_id,)).fetchall()
+                for doc in documents:
+                    file_path = os.path.join(app.config['UPLOAD_FOLDER'], doc['filename'])
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                
+                # Delete from database
+                conn.execute('DELETE FROM property_documents WHERE property_id = ?', (property_id,))
+                conn.execute('DELETE FROM property_maps_links WHERE property_id = ?', (property_id,))
+                conn.execute('DELETE FROM properties WHERE id = ?', (property_id,))
+            
+            conn.commit()
+            flash(f'Successfully deleted {len(property_ids)} properties.', 'success')
+            
+        elif action == 'update_status':
+            new_status = request.form.get('new_status')
+            if new_status:
+                for property_id in property_ids:
+                    conn.execute('UPDATE properties SET status = ?, updated_date = ? WHERE id = ?', 
+                               (new_status, datetime.now().isoformat(), property_id))
+                conn.commit()
+                flash(f'Successfully updated status to "{new_status}" for {len(property_ids)} properties.', 'success')
+            else:
+                flash('No status selected for update.', 'error')
+                
+        elif action == 'export':
+            # Export selected properties to CSV
+            properties = []
+            for property_id in property_ids:
+                property_data = conn.execute('SELECT * FROM properties WHERE id = ?', (property_id,)).fetchone()
+                if property_data:
+                    properties.append(dict(property_data))
+            
+            # Create CSV content
+            csv_content = 'Title,Type,Status,Price,Location,RTC,Owner,Contact,Date Added\n'
+            for prop in properties:
+                csv_content += f'"{prop.get("title", "")}","{prop.get("property_type", "")}","{prop.get("status", "")}","{prop.get("price", "")}","{prop.get("location", "")}","{prop.get("rtc", "")}","{prop.get("owner_name", "")}","{prop.get("owner_contact", "")}","{prop.get("created_date", "")}"\n'
+            
+            from flask import Response
+            return Response(
+                csv_content,
+                mimetype='text/csv',
+                headers={'Content-Disposition': 'attachment; filename=selected_properties.csv'}
+            )
+        
+        else:
+            flash('Invalid action selected.', 'error')
+            
+    except Exception as e:
+        conn.rollback()
+        flash(f'Error performing bulk action: {str(e)}', 'error')
+    finally:
+        conn.close()
+    
     return redirect(url_for('index'))
 
 @app.route('/download/<filename>')

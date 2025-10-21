@@ -634,6 +634,18 @@ h6 { font-size: 1.125rem; }
     border-radius: var(--radius-2xl);
     box-shadow: var(--shadow-2xl);
     overflow: hidden;
+    position: relative;
+    z-index: 1056;
+}
+
+.modal-backdrop {
+    background-color: rgba(17, 24, 39, 0.65) !important;
+    backdrop-filter: blur(4px);
+    transition: opacity var(--transition-normal);
+}
+
+.modal-backdrop.show {
+    opacity: 1;
 }
 
 .modal-header {
@@ -1108,4 +1120,11 @@ footer {
     border-color: var(--success-color);
     transform: translateX(4px);
     box-shadow: var(--shadow-md);
+}
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+}
+.modal {
+    z-index: 1060 !important;
 }
